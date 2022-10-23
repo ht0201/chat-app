@@ -1,24 +1,24 @@
+import { Button, Col, Row, Typography } from 'antd';
 import React from 'react';
-import { Row, Col, Button, Typography } from 'antd';
 import firebase, { auth } from '../../firebase/config';
-import { useHistory } from 'react-router-dom';
+import { addDocument } from '../../firebase/services';
 
 const { Title } = Typography;
 const fbProvider = new firebase.auth.FacebookAuthProvider();
 
 const Login = () => {
-  const history = useHistory();
-
-  const loginHandler = () => {
-    auth.signInWithPopup(fbProvider);
-  };
-
-  auth.onAuthStateChanged((user) => {
-    console.log(user);
-    if (user) {
-      history.push('/');
+  const loginHandler = async () => {
+    const { additionalUserInfo, user } = await auth.signInWithPopup(fbProvider);
+    if (additionalUserInfo?.isNewUser) {
+      addDocument('users', {
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.displayName,
+        providerId: additionalUserInfo.providerId,
+      });
     }
-  });
+  };
 
   return (
     <Row justify='center' style={{ height: 800 }}>

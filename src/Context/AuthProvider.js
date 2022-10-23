@@ -22,7 +22,6 @@ const AuthProvider = ({ children }) => {
           photoURL,
         });
         setIsLoading(false);
-
         history.push('/');
         return;
       }
