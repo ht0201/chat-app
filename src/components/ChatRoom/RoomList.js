@@ -1,9 +1,8 @@
 import { PlusSquareOutlined } from '@ant-design/icons';
 import { Button, Collapse, Typography } from 'antd';
-import React, { useContext, useMemo } from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
-import { AuthContext } from '../../Context/AuthProvider';
-import UseFirestore from '../../hooks/useFirestore';
+import { AppContext } from '../../Context/AppProvider';
 
 const { Panel } = Collapse;
 
@@ -33,29 +32,28 @@ const LinkStyled = styled(Typography.Link)`
 `;
 
 const RoomList = () => {
-  const {
-    user: { uid },
-  } = useContext(AuthContext);
+  const { rooms, setIsAddRoomVisible, setSelectedRoomId } =
+    useContext(AppContext);
 
-  const roomsCondition = useMemo(() => {
-    return {
-      fieldName: 'members',
-      operator: 'array-contains',
-      compareValue: uid,
-    };
-  }, [uid]);
-
-  const rooms = UseFirestore('rooms', roomsCondition);
-  console.log(rooms);
+  const handleAddRoom = () => {
+    setIsAddRoomVisible(true);
+  };
 
   return (
     <Collapse ghost defaultActiveKey={['1']}>
       <PanelStyled header='Danh sach cac phong' key='1'>
         {rooms?.map((room) => (
-          <LinkStyled key={room.id}>{room.name}</LinkStyled>
+          <LinkStyled key={room.id} onClick={() => setSelectedRoomId(room.id)}>
+            {room.name}
+          </LinkStyled>
         ))}
 
-        <Button type='text' className='add-room' icon={<PlusSquareOutlined />}>
+        <Button
+          type='text'
+          className='add-room'
+          icon={<PlusSquareOutlined />}
+          onClick={handleAddRoom}
+        >
           Them phong
         </Button>
       </PanelStyled>

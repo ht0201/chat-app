@@ -1,7 +1,12 @@
 import { UserAddOutlined } from '@ant-design/icons';
-import { Avatar, Button, Form, Input, Tooltip } from 'antd';
-import React from 'react';
+import { Alert, Avatar, Button, Form, Input, Tooltip } from 'antd';
+import React, { useContext, useMemo } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
+import { AppContext } from '../../Context/AppProvider';
+import { AuthContext } from '../../Context/AuthProvider';
+import { addDocument } from '../../firebase/services';
+import UseFirestore from '../../hooks/useFirestore';
 import Message from './Message';
 
 const HeaderStyled = styled.div`
@@ -26,6 +31,7 @@ const HeaderStyled = styled.div`
 
     &__description {
       font-size: 0.9rem;
+      color: #999;
     }
   }
 `;
@@ -67,193 +73,114 @@ const FormStyled = styled(Form)`
 `;
 
 const ChatWindow = () => {
+  const { selectedRoom, members, setInviteMemberVisible } =
+    useContext(AppContext);
+  const {
+    user: { displayName, uid, photoURL },
+  } = useContext(AuthContext);
+
+  const [form] = Form.useForm();
+  const [inputValue, setInputValue] = useState('');
+
+  const inviteMemberHandle = () => {
+    setInviteMemberVisible(true);
+  };
+
+  const inputChangeHandle = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const inputSubmitHandle = () => {
+    addDocument('messages', {
+      uid,
+      displayName,
+      photoURL,
+      text: inputValue,
+      roomId: selectedRoom.id,
+      // createdAt: ,
+    });
+
+    form.resetFields(['message']);
+  };
+
+  // get messages
+  const messagesCondition = useMemo(() => {
+    if (selectedRoom?.id) {
+      return {
+        fieldName: 'roomId',
+        operator: '==',
+        compareValue: selectedRoom.id,
+      };
+    }
+  }, [selectedRoom?.id]);
+  const messages = UseFirestore('messages', messagesCondition);
+
   return (
     <WrapperStyled>
-      <HeaderStyled>
-        <div className='header__info'>
-          <p className='header__title'>Room 1</p>
-          <span className='header__description'>Mo ta room 1</span>
-        </div>
-        <ButtonGroupStyled>
-          <Button type='text' icon={<UserAddOutlined />}>
-            Moi
-          </Button>
-          <Avatar.Group size='small' maxCount={2}>
-            <Tooltip title='A'>
-              <Avatar></Avatar>
-            </Tooltip>
-            <Tooltip title='B'>
-              <Avatar></Avatar>
-            </Tooltip>
-            <Tooltip title='C'>
-              <Avatar></Avatar>
-            </Tooltip>
-            <Tooltip title='D'>
-              <Avatar></Avatar>
-            </Tooltip>
-          </Avatar.Group>
-        </ButtonGroupStyled>
-      </HeaderStyled>
-      <ContentStyled>
-        <MessageListStyled>
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-
-          <Message
-            photoURL={null}
-            displayName='A'
-            text='A gui'
-            createdAt='321321321'
-          />
-        </MessageListStyled>
-        <FormStyled>
-          <Form.Item>
-            <Input
-              bordered={false}
-              autoComplete='off'
-              placeholder='nhap tin nhan'
-            />
-          </Form.Item>
-          <Button type='primary'>Gui</Button>
-        </FormStyled>
-      </ContentStyled>
+      {selectedRoom?.id ? (
+        <>
+          <HeaderStyled>
+            <div className='header__info'>
+              <p className='header__title'>{selectedRoom?.name}</p>
+              <span className='header__description'>
+                {selectedRoom?.description}
+              </span>
+            </div>
+            <ButtonGroupStyled>
+              <Button
+                type='text'
+                icon={<UserAddOutlined />}
+                onClick={inviteMemberHandle}
+              >
+                Mời
+              </Button>
+              <Avatar.Group size='small' maxCount={2}>
+                {members.map((member) => (
+                  <Tooltip title={member.displayName} key={member.id}>
+                    <Avatar src={member.photoURL}>
+                      {member.photoURL
+                        ? ''
+                        : member.displayName.charAt(0)?.toUpperCase()}
+                    </Avatar>
+                  </Tooltip>
+                ))}
+              </Avatar.Group>
+            </ButtonGroupStyled>
+          </HeaderStyled>
+          <ContentStyled>
+            <MessageListStyled>
+              {messages.map(
+                ({ photoURL, displayName, text, createdAt, id }) => (
+                  <Message
+                    key={id}
+                    photoURL={photoURL}
+                    displayName={displayName}
+                    text={text}
+                    createdAt={createdAt}
+                  />
+                )
+              )}
+            </MessageListStyled>
+            <FormStyled form={form}>
+              <Form.Item name='message'>
+                <Input
+                  bordered={false}
+                  autoComplete='off'
+                  placeholder='Nhập tin nhắn'
+                  onChange={inputChangeHandle}
+                  onPressEnter={inputSubmitHandle}
+                  value={inputValue}
+                />
+              </Form.Item>
+              <Button type='primary' onClick={inputSubmitHandle}>
+                Gửi
+              </Button>
+            </FormStyled>
+          </ContentStyled>
+        </>
+      ) : (
+        <Alert type='info' message='Hay chon phong' closable />
+      )}
     </WrapperStyled>
   );
 };

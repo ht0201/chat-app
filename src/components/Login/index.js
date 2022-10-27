@@ -1,7 +1,7 @@
 import { Button, Col, Row, Typography } from 'antd';
 import React from 'react';
 import firebase, { auth } from '../../firebase/config';
-import { addDocument } from '../../firebase/services';
+import { addDocument, generateKeywords } from '../../firebase/services';
 
 const { Title } = Typography;
 const fbProvider = new firebase.auth.FacebookAuthProvider();
@@ -14,8 +14,9 @@ const Login = () => {
         displayName: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
-        uid: user.displayName,
+        uid: user.uid,
         providerId: additionalUserInfo.providerId,
+        keywords: generateKeywords(user.displayName?.toLowerCase()),
       });
     }
   };

@@ -23,6 +23,7 @@ const UseFirestore = (collection, condition) => {
       const documents = snapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
+        key: doc.id,
       }));
       setDocuments(documents);
     });

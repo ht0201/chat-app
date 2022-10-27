@@ -1,8 +1,8 @@
-import firebase from 'firebase/compat/app';
+import firebase from 'firebase/app';
 
-import 'firebase/compat/analytics';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
+import 'firebase/analytics';
+import 'firebase/auth';
+import 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCYrc-KSGwK_XupexpYEZxm5HZib_sDs5Y',
@@ -20,8 +20,8 @@ firebase.analytics();
 export const auth = firebase.auth();
 export const db = firebase.firestore();
 
-auth.useEmulator('http://localhost:9099');
 if (window.location.hostname === 'localhost') {
+  auth.useEmulator('http://localhost:9099');
   db.useEmulator('localhost', '8080');
 }
 
